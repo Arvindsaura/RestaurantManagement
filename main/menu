@@ -1,0 +1,144 @@
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import main.database.DatabaseConnection;
+import main.models.MenuItem;
+
+public class MenuDAO {
+
+    public void addMenuItem(String name, int cat_id, double pr, String desc, int preptime, boolean isav) throws SQLException {
+        String query = "INSERT INTO menu_items (item_name, category_id, price, description, preparation_time, is_available) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection(); 
+    PreparedStatement pst = conn.prepareStatement(query)) {
+         pst.setString(1, name);
+             pst.setInt(2, cat_id);
+           pst.setDouble(3, pr);
+            pst.setString(4, desc);
+            pst.setInt(5, preptime);
+            pst.setBoolean(6, isav);
+            pst.executeUpdate();
+        }}
+
+    public void updateMenuItem(int id, String name, int cat_id, double pr, String desc, int preptime, boolean isav) throws SQLException {
+        String query = "UPDATE menu_items SET item_name = ?, category_id = ?, price = ?, description = ?, preparation_time = ?, is_available = ? WHERE item_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setString(1, name);
+             pst.setInt(2, cat_id);
+            pst.setDouble(3, pr);
+          pst.setString(4, desc);
+            pst.setInt(5, preptime);
+            pst.setBoolean(6, isav);
+        pst.setInt(7, id);
+            pst.executeUpdate();
+        }}
+
+    public void deleteMenuItem(int id) throws SQLException {
+        String query = "DELETE FROM menu_items WHERE item_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setInt(1, id);
+            
+            pst.executeUpdate();}
+        
+    }
+
+    public MenuItem getMenuItemById(int id) throws SQLException {
+        String query = "SELECT * FROM menu_items WHERE item_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setInt(1, id);
+            try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) {
+                    return new MenuItem(
+                          rs.getInt("item_id"),
+                        rs.getString("item_name"),
+                        
+                        rs.getInt("category_id"),
+                rs.getDouble("price"),
+                        rs.getString("description"),
+                rs.getBoolean("is_available"),
+        rs.getInt("preparation_time")
+                    );
+                }
+            }}
+        return null;
+    }
+
+    public List<MenuItem> getAllMenuItems() throws SQLException {
+        String query = "SELECT * FROM menu_items ORDER BY item_id";
+        List<MenuItem> items = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                items.add(new MenuItem(
+    rs.getInt("item_id"),
+            rs.getString("item_name"),
+            rs.getInt("category_id"),
+                    rs.getDouble("price"),
+                    rs.getString("description"),
+                    rs.getBoolean("is_available"),
+                    rs.getInt("preparation_time")
+                ));}
+            
+        }
+        return items;
+    }
+
+    public List<MenuItem> getMenuItemsByCategory(int cat_id) throws SQLException {
+        String query = "SELECT * FROM menu_items WHERE category_id = ? ORDER BY item_name";
+        List<MenuItem> items = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(query)) {
+            pst.setInt(1, cat_id);
+             try (ResultSet rs = pst.executeQuery()) {
+                while (rs.next()) {
+                    items.add(new MenuItem(
+            rs.getInt("item_id"),
+            rs.getString("item_name"),
+        rs.getInt("category_id"),
+            rs.getDouble("price"),
+          rs.getString("description"),
+         rs.getBoolean("is_available"),
+            rs.getInt("preparation_time")
+                    ));}
+            }
+        
+    }
+        return items;}
+
+    public List<MenuItem> getAvailableMenuItems() throws SQLException {
+        String query = "SELECT * FROM menu_items WHERE is_available = TRUE ORDER BY item_name";
+        List<MenuItem> items = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection(); Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                items.add(new MenuItem(
+            rs.getInt("item_id"),
+            rs.getString("item_name"),
+            rs.getInt("category_id"),
+             rs.getDouble("price"),
+             rs.getString("description"),
+                  rs.getBoolean("is_available"),
+                  rs.getInt("preparation_time")
+                ));}}
+        
+    
+        return items;
+    }
+
+    public void updateItemAvailability(int id, boolean isav) throws SQLException {
+        String query = "UPDATE menu_items SET is_available = ? WHERE item_id = ?";
+        try (Connection conn = DatabaseConnection.getConnection(); PreparedStatement pst = conn.prepareStatement(query)) {
+    pst.setBoolean(1, isav);
+pst.setInt(2, id);
+    pst.executeUpdate();}
+        
+    }
+
+    public int getCategoryIdByName(String cat_name) throws SQLException {
+        String query = "SELECT category_id FROM menu_categories WHERE category_name = ?";
+        try (Connection conn = DatabaseConnection.getConnection(); 
+        PreparedStatement pst = conn.prepareStatement(query)) {
+           pst.setString(1, cat_name);
+     try (ResultSet rs = pst.executeQuery()) {
+                if (rs.next()) return rs.getInt("category_id");
+            }}
+
+
+        return 0;
+    }}
